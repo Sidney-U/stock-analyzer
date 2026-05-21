@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from datetime import date, timedelta
-from pathlib import Path
 
 import pandas as pd
 import plotly.graph_objects as go
@@ -17,7 +16,6 @@ from ashare_analyzer.analyzer import (
     format_number,
     format_percent,
     normalize_symbol,
-    save_report,
 )
 
 
@@ -55,12 +53,11 @@ def main() -> None:
             analyzed = calculate_indicators(history)
             analysis = build_dashboard_analysis(analyzed, period=period)
             report = build_dashboard_report(symbol, analyzed, analysis)
-            report_path = save_report(report, Path("reports") / f"{symbol}_dashboard.md")
     except (RuntimeError, ValueError) as exc:
         st.error(f"错误：{exc}")
         return
 
-    render_dashboard(symbol, analyzed, analysis, report, report_path)
+    render_dashboard(symbol, analyzed, analysis, report)
 
 
 def render_dashboard(
@@ -68,9 +65,8 @@ def render_dashboard(
     analyzed: pd.DataFrame,
     analysis: dict[str, object],
     report: str,
-    report_path: Path,
 ) -> None:
-    st.success(f"{symbol} 分析完成。报告已保存到：{report_path}")
+    st.success(f"{symbol} 分析完成。报告已在页面生成，可直接预览或下载。")
 
     st.subheader("核心指标")
     c1, c2, c3, c4 = st.columns(4)
@@ -133,9 +129,9 @@ def render_dashboard(
 
     st.subheader("Markdown 报告")
     st.download_button(
-        label="下载 Markdown 报告",
+        label="Download Markdown",
         data=report.encode("utf-8"),
-        file_name=report_path.name,
+        file_name=f"{symbol}_dashboard.md",
         mime="text/markdown",
     )
     st.markdown(report)
